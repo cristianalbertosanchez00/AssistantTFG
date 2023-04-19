@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Padding(
-                    padding: const EdgeInsets.only(bottom: 100.0),
+                    padding: const EdgeInsets.only(bottom: 50.0),
                     child: Material(
                       color: scaffoldBackgroundColor,
                       child: Padding(

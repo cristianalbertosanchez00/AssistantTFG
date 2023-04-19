@@ -17,11 +17,11 @@ class InputWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: Column(
-        children: [
-          Container(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(15), color: Colors.white),
             child: Padding(
@@ -40,20 +40,20 @@ class InputWidget extends StatelessWidget {
               ),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: IconButton(
-                    color: Colors.white,
-                    onPressed: onHidePressed,
-                    icon: const Icon(Icons.keyboard_arrow_down)),
-              )
-            ],
-          )
-        ],
-      ),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+                color: Colors.white,
+                onPressed: onHidePressed,
+                icon: const Icon(  size: 30, Icons.keyboard_arrow_down))
+          ],
+        )
+      ],
     );
   }
 }
