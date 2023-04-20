@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
-Color scaffoldBackgroundColor = const Color(0xFF343541);
-Color cardColor = const Color(0xFF444654);
+Color scaffoldBackgroundColor = const Color(0xFF022833);
+Color scaffoldSecondaryBackgroundColor = const Color(0xFF1A0515);
+
+Color Primary = const Color(0xFF16EFE9);
+Color Secondary = const Color(0xFFF02EC7);
+Color Tertiary = const Color(0xFFF0CE2E);
+Color Alternate = const Color(0xFF1A0515);
+Color PrimaryText = Colors.white;
+Color AccentOne = const Color(0xFF30FFF8);
+Color AccentTwo = const Color(0xFF07A39E);
+Color AccentThree = const Color(0xFFA33900);
+Color AccentFour = const Color(0xFFF06216);
+
+
+Color cardColor = const Color(0xFF022833);
 
 // List<String> models = [
 //   'Model1',

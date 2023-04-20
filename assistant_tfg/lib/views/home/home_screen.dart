@@ -5,11 +5,12 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:provider/provider.dart';
 import '../../themes/theme.dart';
 import '../../providers/chats_provider.dart';
-import '../../services/assets_manager.dart';
 import '../../widgets/chat_widget.dart';
 import '../../widgets/text_input_widget.dart';
 import '../../widgets/menu_widget.dart';
 import '../../widgets/text_widget.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,17 +20,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool _showChat = false;
   bool _showButtons = true;
   bool _isTyping = false;
   late TextEditingController textEditingController;
   late ScrollController _listScrollController;
   late FocusNode focusNode;
-
+  final recorder = FlutterSoundRecorder();
+  
   void _toggleChatVisibility() {
     setState(() {
       _showButtons = !_showButtons;
-      _showChat = !_showChat;
     });
   }
 
@@ -47,6 +47,10 @@ class _HomeScreenState extends State<HomeScreen> {
     textEditingController.dispose();
     focusNode.dispose();
     super.dispose();
+  }
+
+  Future record() async{
+    //await recorder.start
   }
 
   @override
@@ -71,124 +75,186 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           // Aquí va el contenido de ChatScreen
-          Visibility(
-            visible: _showChat,
-            child: Column(
-              children: [
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (BuildContext context,
-                        BoxConstraints viewportConstraints) {
-                      return SingleChildScrollView(
-                        controller: _listScrollController,
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: viewportConstraints.maxHeight,
-                          ),
-                          child: ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: chatProvider.getChatList.length,
-                              itemBuilder: (context, index) {
-                                return ChatWidget(
-                                  msg: chatProvider.getChatList[index].msg,
-                                  chatIndex:
-                                      chatProvider.getChatList[index].chatIndex,
-                                  shouldAnimate:
-                                      chatProvider.getChatList.length - 1 ==
-                                          index,
-                                );
-                              }),
+
+          Column(
+            children: [
+              const SizedBox(
+                height: 10,
+              ),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (BuildContext context,
+                      BoxConstraints viewportConstraints) {
+                    return SingleChildScrollView(
+                      controller: _listScrollController,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: viewportConstraints.maxHeight,
                         ),
-                      );
-                    },
-                  ),
-                ),
-                if (_isTyping) ...[
-                  const SpinKitThreeBounce(
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ],
-                const SizedBox(
-                  height: 15,
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 50.0),
-                    child: Material(
-                      color: scaffoldBackgroundColor,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: InputWidget(
-                          focusNode: focusNode,
-                          textEditingController: textEditingController,
-                          onSendPressed: () async {
-                            await sendMessageFCT(chatProvider: chatProvider);
-                          },
-                          onHidePressed: _toggleChatVisibility,
-                        ),
+                        child: ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: chatProvider.getChatList.length,
+                            itemBuilder: (context, index) {
+                              return ChatWidget(
+                                msg: chatProvider.getChatList[index].msg,
+                                chatIndex:
+                                    chatProvider.getChatList[index].chatIndex,
+                                shouldAnimate:
+                                    chatProvider.getChatList.length - 1 ==
+                                        index,
+                              );
+                            }),
                       ),
-                    ),
-                  ),
+                    );
+                  },
+                ),
+              ),
+              if (_isTyping) ...[
+                const SpinKitThreeBounce(
+                  color: Colors.white,
+                  size: 18,
                 ),
               ],
-            ),
-          ),
-          // Agrega los botones en la parte inferior
-          Visibility(
-            visible: _showButtons,
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 100.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              const SizedBox(
+                height: 15,
+              ),
+              Visibility(
+                visible: !_showButtons,
+                child: Column(
                   children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.camera_alt_outlined,
-                        color: Colors.white,
-                      ),
-                      iconSize: 30,
-                      onPressed: () {
-                        // Implementa la función de la cámara
-                      },
-                    ),
-                    const SizedBox(width: 50.0),
-                    Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Colors.greenAccent,
-                            Colors.purpleAccent,
-                          ],
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 50.0),
+                        child: Material(
+                          color: scaffoldBackgroundColor,
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: InputWidget(
+                              focusNode: focusNode,
+                              textEditingController: textEditingController,
+                              onSendPressed: () async {
+                                await sendMessageFCT(
+                                    chatProvider: chatProvider);
+                              },
+                              onHidePressed: _toggleChatVisibility,
+                            ),
+                          ),
                         ),
                       ),
-                      child: IconButton(
-                        iconSize: 60,
-                        icon:
-                            const Icon(Icons.mic_outlined, color: Colors.white),
-                        onPressed: () {
-                          // Implementa la función del micrófono
-                        },
-                      ),
                     ),
-                    const SizedBox(width: 50.0),
-                    IconButton(
-                      icon: const Icon(Icons.keyboard, color: Colors.white),
-                      iconSize: 30,
-                      onPressed: _toggleChatVisibility,
+                    Visibility(
+                      visible: _showButtons,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 100.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.camera_alt_outlined,
+                                  color: Colors.white,
+                                ),
+                                iconSize: 30,
+                                onPressed: () {
+                                  // Implementa la función de la cámara
+                                },
+                              ),
+                              const SizedBox(width: 50.0),
+                              Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Colors.greenAccent,
+                                      Colors.purpleAccent,
+                                    ],
+                                  ),
+                                ),
+                                child: IconButton(
+                                  iconSize: 60,
+                                  icon: const Icon(Icons.mic_outlined,
+                                      color: Colors.white),
+                                  onPressed: () {
+                                    
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 50.0),
+                              IconButton(
+                                icon: const Icon(Icons.keyboard,
+                                    color: Colors.white),
+                                iconSize: 30,
+                                onPressed: _toggleChatVisibility,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
+              Visibility(
+                visible: _showButtons,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 100.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.camera_alt_outlined,
+                            color: Colors.white,
+                          ),
+                          iconSize: 30,
+                          onPressed: () {
+                            // Implementa la función de la cámara
+                          },
+                        ),
+                        const SizedBox(width: 50.0),
+                        Container(
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.greenAccent,
+                                Colors.purpleAccent,
+                              ],
+                            ),
+                          ),
+                          child: IconButton(
+                            iconSize: 60,
+                            icon: const Icon(Icons.mic_outlined,
+                                color: Colors.white),
+                            onPressed: () {
+                              // Implementa la función del micrófono
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 50.0),
+                        IconButton(
+                          icon: const Icon(Icons.keyboard, color: Colors.white),
+                          iconSize: 30,
+                          onPressed: _toggleChatVisibility,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
+          // Agrega los botones en la parte inferior
         ],
       ),
     );
