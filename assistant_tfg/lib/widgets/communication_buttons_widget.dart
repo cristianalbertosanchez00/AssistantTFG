@@ -4,15 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:record/record.dart';
-import 'package:provider/provider.dart';
 import 'package:assistant_tfg/services/api_service.dart';
 import 'package:assistant_tfg/providers/chats_provider.dart';
 
 
 class CommunicationButtons extends StatefulWidget {
   final void Function(String path) onStop;
+  final void Function(bool value) setIsTyping;
+
   final VoidCallback toggleChatVisibility;
-    final ChatProvider chatProvider;
+  final ChatProvider chatProvider;
 
   
 
@@ -21,6 +22,8 @@ class CommunicationButtons extends StatefulWidget {
     required this.toggleChatVisibility,
     required this.onStop,
     required this.chatProvider,
+    required this.setIsTyping,
+
   }) : super(key: key);
 
   @override
@@ -88,9 +91,9 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
             AvatarGlow(
               endRadius: 75.0,
               animate: isListening,
-              duration: const Duration(milliseconds: 1000),
+              duration: const Duration(milliseconds: 1500),
               glowColor: AccentOne,
-              repeatPauseDuration: const Duration(milliseconds: 10),
+              repeatPauseDuration: const Duration(milliseconds: 0),
               repeat: true,
               showTwoGlows: true,
               child: Container(
@@ -144,6 +147,8 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
 Future<void> _sendAudioMessage(String audioPath) async {
   try {
     // Espera a que la transcripción esté completa antes de continuar
+    widget.setIsTyping(true);
+
     String transcribedText = await ApiService.sendAudioMessage(audioPath: audioPath);
 
     if (transcribedText.isNotEmpty) {
@@ -151,6 +156,9 @@ Future<void> _sendAudioMessage(String audioPath) async {
       widget.chatProvider.addUserMessage(msg: transcribedText);
       await widget.chatProvider.sendMessageAndGetAnswers(msg: transcribedText);
     }
+
+    widget.setIsTyping(false);
+
 
   } catch (error) {
     // Muestra un SnackBar con el mensaje de error y un fondo rojo

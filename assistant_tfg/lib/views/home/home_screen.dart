@@ -28,18 +28,18 @@ class _HomeScreenState extends State<HomeScreen> {
   late TextEditingController textEditingController;
   late ScrollController _scrollController;
   late FocusNode focusNode;
- 
-void _onAudioRecordingStop(String path) {
-  setState(() {
-    audiopath = path;
-  });
-  if (kDebugMode) print('Recorded file path: $audiopath');
-  // Luego puedes usar 'audioPath' para pasarlo a tu API.
-}
 
+  void _onAudioRecordingStop(String path) {
+    setState(() {
+      audiopath = path;
+    });
+    if (kDebugMode) print('Recorded file path: $audiopath');
+    // Luego puedes usar 'audioPath' para pasarlo a tu API.
+  }
 
- void _scrollListener() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent) {
       setState(() {
         _showScrollDownButton = false;
       });
@@ -74,7 +74,6 @@ void _onAudioRecordingStop(String path) {
     super.dispose();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     final chatProvider = Provider.of<ChatProvider>(context);
@@ -130,12 +129,10 @@ void _onAudioRecordingStop(String path) {
             ),
           ),
           if (_isTyping) ...[
-            
-              const SpinKitThreeBounce(
-                color: Colors.white,
-                size: 18,
-              ),
-            
+            const SpinKitThreeBounce(
+              color: Colors.white,
+              size: 18,
+            ),
           ],
           // Segunda sección: botones e input widget
           if (!_showButtons)
@@ -152,11 +149,14 @@ void _onAudioRecordingStop(String path) {
             )
           else
             CommunicationButtons(
-              toggleChatVisibility: _toggleChatVisibility,
-              onStop: _onAudioRecordingStop,
-              chatProvider: Provider.of<ChatProvider>(context, listen: false),
-
-            ),
+                toggleChatVisibility: _toggleChatVisibility,
+                onStop: _onAudioRecordingStop,
+                chatProvider: Provider.of<ChatProvider>(context, listen: false),
+                setIsTyping: (bool value) {
+                  setState(() {
+                    _isTyping = value;
+                  });
+                }),
         ],
       ),
     );
