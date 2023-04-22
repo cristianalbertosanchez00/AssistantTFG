@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-
 import '../config/api_consts.dart';
 import '../models/chat_model.dart';
 
@@ -102,4 +101,36 @@ class ApiService {
       rethrow;
     }
   }
+
+
+static Future<String> sendAudioMessage({required String audioPath}) async {
+  try {
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://api.openai.com/v1/audio/transcriptions'),
+    );
+
+    request.headers.addAll({
+      'Authorization': 'Bearer $apiKey',
+    });
+
+    request.fields['model'] = 'whisper-1';
+    request.files.add(await http.MultipartFile.fromPath('file', audioPath));
+
+    var response = await request.send();
+    var responseData = await response.stream.bytesToString();
+    Map jsonResponse = json.decode(responseData);
+
+    if (jsonResponse['error'] != null) {
+      throw HttpException(jsonResponse['error']["message"]);
+    }
+
+    return jsonResponse['text'] ?? '';
+  } catch (error) {
+    log("error $error");
+    rethrow;
+  }
+}
+
+
 }

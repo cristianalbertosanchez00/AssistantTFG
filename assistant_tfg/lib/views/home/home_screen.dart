@@ -1,5 +1,7 @@
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
+
 import '../../widgets/communication_buttons_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -22,11 +24,19 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showButtons = true;
   bool _isTyping = false;
   bool _showScrollDownButton = false;
-
+  String? audiopath;
   late TextEditingController textEditingController;
   late ScrollController _scrollController;
   late FocusNode focusNode;
  
+void _onAudioRecordingStop(String path) {
+  setState(() {
+    audiopath = path;
+  });
+  if (kDebugMode) print('Recorded file path: $audiopath');
+  // Luego puedes usar 'audioPath' para pasarlo a tu API.
+}
+
 
  void _scrollListener() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
@@ -143,6 +153,9 @@ class _HomeScreenState extends State<HomeScreen> {
           else
             CommunicationButtons(
               toggleChatVisibility: _toggleChatVisibility,
+              onStop: _onAudioRecordingStop,
+              chatProvider: Provider.of<ChatProvider>(context, listen: false),
+
             ),
         ],
       ),

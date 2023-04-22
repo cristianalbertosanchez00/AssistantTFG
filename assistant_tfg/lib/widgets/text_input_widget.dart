@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../themes/theme.dart';
 
 class InputWidget extends StatelessWidget {
   final TextEditingController textEditingController;
@@ -20,7 +19,7 @@ class InputWidget extends StatelessWidget {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 60, top: 25),
+        padding: const EdgeInsets.only(bottom: 45, top: 28),
         child: Column(
           children: [
             Padding(
