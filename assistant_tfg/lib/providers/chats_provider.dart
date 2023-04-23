@@ -5,6 +5,10 @@ import '../services/api_service.dart';
 
 class ChatProvider with ChangeNotifier {
   List<ChatModel> chatList = [];
+  void Function()? onNewMessageReceived;
+  ChatProvider({this.onNewMessageReceived});
+
+
   List<ChatModel> get getChatList {
     return chatList;
   }
@@ -21,9 +25,9 @@ class ChatProvider with ChangeNotifier {
         message: msg,
         
       ));
-     
-    }
-    @override
+      onNewMessageReceived!();
       notifyListeners();
+
+    }      
   }
 

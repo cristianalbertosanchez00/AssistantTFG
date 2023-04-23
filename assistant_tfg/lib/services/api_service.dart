@@ -26,7 +26,7 @@ class ApiService {
             "messages": [
               {
                 "role": "user",
-                "content": message,
+                "content": "Actua como un asistente virtual llamado Jarvis (capaz de oir a través del microfono del dispositivo), no hace falta que te presentes a no ser que te salude o te pregunte, a continuación verás mi promp: $message",
               }
             ]
           },

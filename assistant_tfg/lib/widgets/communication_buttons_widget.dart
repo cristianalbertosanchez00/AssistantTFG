@@ -6,16 +6,15 @@ import 'package:avatar_glow/avatar_glow.dart';
 import 'package:record/record.dart';
 import 'package:assistant_tfg/services/api_service.dart';
 import 'package:assistant_tfg/providers/chats_provider.dart';
-
+import 'package:vibration/vibration.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class CommunicationButtons extends StatefulWidget {
   final void Function(String path) onStop;
   final void Function(bool value) setIsTyping;
-
+  final VoidCallback onShortPress;
   final VoidCallback toggleChatVisibility;
   final ChatProvider chatProvider;
-
-  
 
   const CommunicationButtons({
     Key? key,
@@ -23,7 +22,7 @@ class CommunicationButtons extends StatefulWidget {
     required this.onStop,
     required this.chatProvider,
     required this.setIsTyping,
-
+    required this.onShortPress,
   }) : super(key: key);
 
   @override
@@ -35,8 +34,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
   final _audioRecorder = Record();
   StreamSubscription<RecordState>? _recordSub;
   RecordState _recordState = RecordState.stop;
-
-
+  
   @override
   void initState() {
     _recordSub = _audioRecorder.onStateChanged().listen((recordState) {
@@ -68,6 +66,16 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
     return path ?? '';
   }
 
+  void playSoundAndVibrate() async {
+    final player = AudioPlayer();
+    await player.play(AssetSource('recording_sound_effect.mp3'));
+
+    bool hasVibrator = await Vibration.hasVibrator() ?? false;
+    if (hasVibrator) {
+      Vibration.vibrate(duration: 150);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Align(
@@ -92,7 +100,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
               endRadius: 75.0,
               animate: isListening,
               duration: const Duration(milliseconds: 1500),
-              glowColor: AccentOne,
+              glowColor: Primary,
               repeatPauseDuration: const Duration(milliseconds: 0),
               repeat: true,
               showTwoGlows: true,
@@ -105,30 +113,41 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Primary,
-                      Secondary,
+                      isListening ? Secondary : Primary,
+                      isListening ? AccentFour : Secondary,
                     ],
                   ),
                 ),
-                child: IconButton(
-                  iconSize: 45,
-                  icon: Icon(
-                      isListening ? Icons.stop_circle_outlined : Icons.mic,
-                      color: Colors.white),
-                  onPressed: () {
+                child: GestureDetector(
+                  onTap: widget.onShortPress,
+                  onDoubleTap: widget.onShortPress,
+                  onLongPressStart: (details) {
+                    if (_recordState != RecordState.stop) {
+                      return;
+                    }
+                    playSoundAndVibrate();
+                    _start();
+                    setState(() {
+                      isListening = true;
+                    });
+                  },
+                  onLongPressEnd: (details) {
                     if (_recordState != RecordState.stop) {
                       _stop().then((path) {
-                        if (path .isNotEmpty) {
+                        if (path.isNotEmpty) {
                           _sendAudioMessage(path);
                         }
                       });
-                    } else {
-                      _start();
                     }
                     setState(() {
-                      isListening = !isListening;
+                      isListening = false;
                     });
                   },
+                  child: Icon(
+                    isListening ? Icons.stop_circle_outlined : Icons.mic,
+                    color: Colors.white,
+                    size: 45,
+                  ),
                 ),
               ),
             ),
@@ -144,33 +163,33 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
     );
   }
 
-Future<void> _sendAudioMessage(String audioPath) async {
-  try {
-    // Espera a que la transcripción esté completa antes de continuar
-    widget.setIsTyping(true);
+  Future<void> _sendAudioMessage(String audioPath) async {
+    try {
+      // Espera a que la transcripción esté completa antes de continuar
+      widget.setIsTyping(true);
 
-    String transcribedText = await ApiService.sendAudioMessage(audioPath: audioPath);
+      String transcribedText =
+          await ApiService.sendAudioMessage(audioPath: audioPath);
 
-    if (transcribedText.isNotEmpty) {
-      // Agrega el texto transcrito como un mensaje de usuario y envíalo a ChatGPT
-      widget.chatProvider.addUserMessage(msg: transcribedText);
-      await widget.chatProvider.sendMessageAndGetAnswers(msg: transcribedText);
+      if (transcribedText.isNotEmpty) {
+        // Agrega el texto transcrito como un mensaje de usuario y envíalo a ChatGPT
+        widget.chatProvider.addUserMessage(msg: transcribedText);
+        await widget.chatProvider
+            .sendMessageAndGetAnswers(msg: transcribedText);
+      }
+
+      widget.setIsTyping(false);
+    } catch (error) {
+      // Muestra un SnackBar con el mensaje de error y un fondo rojo
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+          'Error en el envío',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.red,
+      ));
     }
-
-    widget.setIsTyping(false);
-
-
-  } catch (error) {
-    // Muestra un SnackBar con el mensaje de error y un fondo rojo
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text(
-        'Error en el envío',
-        style: TextStyle(color: Colors.white),
-      ),
-      backgroundColor: Colors.red,
-    ));
   }
-}
 
   @override
   void dispose() {

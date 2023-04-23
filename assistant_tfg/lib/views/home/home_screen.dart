@@ -12,6 +12,8 @@ import '../../widgets/chat_widget.dart';
 import '../../widgets/text_input_widget.dart';
 import '../../widgets/menu_widget.dart';
 import '../../widgets/text_widget.dart';
+import '../../utils/scroll_functions.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -50,6 +52,24 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
+    void _scrollToEnd() {
+    scrollToEnd(_scrollController);
+  }
+
+  void _showFailRecordingMessage(){
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Warning,
+        content: const Padding(
+          padding: EdgeInsets.all(2.0),
+          child: Text("Por favor, mantenga pulsado para hablar", style: TextStyle(color: Colors.white),),
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   void _toggleChatVisibility() {
     setState(() {
       _showButtons = !_showButtons;
@@ -62,6 +82,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _scrollController.addListener(_scrollListener);
     textEditingController = TextEditingController();
     focusNode = FocusNode();
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+    Provider.of<ChatProvider>(context, listen: false).onNewMessageReceived = _scrollToEnd;
+    });
     super.initState();
   }
 
@@ -151,10 +174,12 @@ class _HomeScreenState extends State<HomeScreen> {
             CommunicationButtons(
                 toggleChatVisibility: _toggleChatVisibility,
                 onStop: _onAudioRecordingStop,
+                onShortPress: _showFailRecordingMessage,
                 chatProvider: Provider.of<ChatProvider>(context, listen: false),
                 setIsTyping: (bool value) {
                   setState(() {
                     _isTyping = value;
+                    _scrollToEnd();
                   });
                 }),
         ],
@@ -164,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> sendMessageFCT({required ChatProvider chatProvider}) async {
     if (_isTyping) {
+      _scrollToEnd();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: TextWidget(
@@ -189,6 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
       String msg = textEditingController.text;
       setState(() {
         _isTyping = true;
+        _scrollToEnd();
         // chatList.add(ChatModel(msg: textEditingController.text, chatIndex: 0));
         chatProvider.addUserMessage(msg: msg);
         textEditingController.clear();
@@ -211,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       setState(() {
         _isTyping = false;
+        _scrollToEnd();
       });
     }
   }
