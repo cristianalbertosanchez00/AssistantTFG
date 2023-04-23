@@ -63,11 +63,12 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: CurvedNavigationBar(
         index: _currentIndex,
         backgroundColor: scaffoldBackgroundColor,
+        color: cardColor,
         height: 50,
         items: const <Widget>[
-          Icon(Icons.assignment_outlined, size: 30),
-          Icon(Icons.home_outlined, size: 30),
-          Icon(Icons.person_outline, size: 30),
+          Icon(Icons.assignment_outlined, size: 30, color: Colors.white),
+          Icon(Icons.home_outlined, size: 30,color: Colors.white),
+          Icon(Icons.person_outline, size: 30,color: Colors.white),
         ],
         onTap: (index) {
           setState(() {

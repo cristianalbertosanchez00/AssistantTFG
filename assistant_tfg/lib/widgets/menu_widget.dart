@@ -1,3 +1,4 @@
+import 'package:assistant_tfg/themes/theme.dart';
 import 'package:flutter/material.dart';
 
 class MenuWidget extends StatelessWidget {
@@ -6,30 +7,33 @@ class MenuWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          const DrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.blue,
+      child: Container(
+        color: scaffoldBackgroundColor,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+             DrawerHeader(
+              decoration: BoxDecoration(
+                color: cardColor,
+              ),
+              child: const Text('Menú', style: TextStyle(color: Colors.white),),
             ),
-            child: Text('Menú'),
-          ),
-          ListTile(
-            title: const Text('Item 1'),
-            onTap: () {
-              // Aquí puedes agregar la acción que se ejecutará al presionar el Item 1.
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            title: const Text('Item 2'),
-            onTap: () {
-              // Aquí puedes agregar la acción que se ejecutará al presionar el Item 2.
-              Navigator.pop(context);
-            },
-          ),
-        ],
+            ListTile(
+              title: const Text('Item 1',style: TextStyle(color: Colors.white),),
+              onTap: () {
+                // Aquí puedes agregar la acción que se ejecutará al presionar el Item 1.
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Item 2',style: TextStyle(color: Colors.white),),
+              onTap: () {
+                // Aquí puedes agregar la acción que se ejecutará al presionar el Item 2.
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

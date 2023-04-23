@@ -13,7 +13,7 @@ Color AccentTwo = const Color(0xFF07A39E);
 Color AccentThree = const Color(0xFFA33900);
 Color AccentFour = const Color(0xFFF06216);
 Color NeutralGrayColor = Color.fromARGB(151, 126, 129, 133);
-
+Color ButtonNavigationColor = Color.fromARGB(87, 7, 163, 158);
 Color cardColor = Color.fromARGB(255, 5, 60, 75);
 
 
