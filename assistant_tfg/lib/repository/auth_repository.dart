@@ -2,6 +2,8 @@ import 'package:assistant_tfg/views/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 //import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 //import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -43,12 +45,40 @@ class AuthenticationRepository {
 
 /*-----------------------Email & Password sign-in ----------------------------*/
 
-  /// [EmoilAuthentication] - LOGIN
-  Future<void> loginWithEnailAndPassword(String email, String password) async {}
+  /// [EmailAuthenticationLOGIN] - LOGIN
+  Future<UserCredential> loginWithEmailAndPassword(
+      String email, String password) async {
+    UserCredential userCredential = await FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password);
 
-  /// [EmoilAuthentication] - REGISTER
-  Future<void> createUserWithEmailAndPassword(
-      String email, String password) async {}
+    return userCredential;
+  }
+
+  /// [EmailAuthenticationREGISTER] - REGISTER
+  Future<UserCredential> registerWithEmail(
+      String email, String password) async {
+    UserCredential userCredential = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: password);
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user?.uid)
+        .set({
+      'email': email,
+      'provider': 'mail',
+
+      // Agregar otros datos del usuario que quieras almacenar
+    });
+    return userCredential;
+  }
+
+  /// [EmailExists] - EMAIL EXISTS
+  Future<bool> emailExists(String email) async {
+    QuerySnapshot query = await FirebaseFirestore.instance
+        .collection('users')
+        .where('email', isEqualTo: email)
+        .get();
+    return query.docs.isNotEmpty;
+  }
 
   /// [EmoilVerification] - VERIFICATION
   Future<void> sendEmailVerification() async {}
@@ -64,11 +94,23 @@ class AuthenticationRepository {
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
-    return await _firebaseAuth.signInWithCredential(credential);
+    final userCredential = await _firebaseAuth.signInWithCredential(credential);
+
+    // Almacena la información del usuario en Firestore
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userCredential.user?.uid)
+        .set({
+      'email': userCredential.user?.email,
+      'provider': 'google',
+      // Agregar otros datos del usuario que quieras almacenar
+    });
+
+    return userCredential;
   }
 
   Future<void> signOut(BuildContext context) async {
-   Navigator.of(context).pushAndRemoveUntil(
+    Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => LoginScreen()),
         (Route<dynamic> route) => false);
     await _googleSignIn.signOut();

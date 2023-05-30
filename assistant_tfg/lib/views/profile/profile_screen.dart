@@ -37,17 +37,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               backgroundImage: NetworkImage(user.photoURL!),
                               backgroundColor: Colors.transparent,
                             )
-                          : const Image(
-                              image: AssetImage('assets/images/profile.png'),
+                          : const SizedBox(
+                              height: 140,
+                              child: Image(
+                                image: AssetImage('assets/images/profile.png'),
+                              ),
                             ),
                       const SizedBox(height: 20),
                       Text(
                         "${FirebaseAuth.instance.currentUser!.email}",
-                        style: const TextStyle(fontSize: 14, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.white),
                       ),
                       const SizedBox(height: 60),
                       ElevatedButton(
-                        onPressed:(){authRepo.signOut(context);} ,
+                        onPressed: () {
+                          authRepo.signOut(context);
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           shape: RoundedRectangleBorder(
