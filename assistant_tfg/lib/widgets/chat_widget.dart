@@ -36,7 +36,7 @@ class ChatWidget extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: chatIndex == 0 ? NeutralGrayColor : cardColor,
+                        color: chatIndex == 0 ? neutralGrayColor : cardColor,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(

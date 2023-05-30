@@ -3,19 +3,19 @@ import 'package:flutter/material.dart';
 Color scaffoldBackgroundColor = const Color(0xFF022833);
 Color scaffoldSecondaryBackgroundColor = const Color(0xFF1A0515);
 
-Color Primary = const Color(0xFF16EFE9);
-Color Secondary = const Color(0xFFF02EC7);
-Color Tertiary = const Color(0xFFF0CE2E);
-Color Alternate = const Color(0xFF1A0515);
-Color PrimaryText = Colors.white;
-Color AccentOne = const Color(0xFF30FFF8);
-Color AccentTwo = const Color(0xFF07A39E);
-Color AccentThree = Color.fromARGB(255, 228, 80, 0);
-Color Warning = Color.fromARGB(255, 228, 129, 0);
-Color AccentFour = Color.fromARGB(255, 240, 37, 22);
-Color NeutralGrayColor = Color.fromARGB(151, 126, 129, 133);
-Color ButtonNavigationColor = Color.fromARGB(87, 7, 163, 158);
-Color cardColor = Color.fromARGB(255, 5, 60, 75);
+Color primary = const Color(0xFF16EFE9);
+Color secondary = const Color(0xFFF02EC7);
+Color tertiary = const Color(0xFFF0CE2E);
+Color alternate = const Color(0xFF1A0515);
+Color primaryText = Colors.white;
+Color accentOne = const Color(0xFF30FFF8);
+Color accentTwo = const Color(0xFF07A39E);
+Color accentThree = const Color.fromARGB(255, 228, 80, 0);
+Color warning = const Color.fromARGB(255, 228, 129, 0);
+Color accentFour = const Color.fromARGB(255, 240, 37, 22);
+Color neutralGrayColor = const Color.fromARGB(151, 126, 129, 133);
+Color buttonNavigationColor = const Color.fromARGB(87, 7, 163, 158);
+Color cardColor = const Color.fromARGB(255, 5, 60, 75);
 
 
 // List<String> models = [

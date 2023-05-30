@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showFailRecordingMessage(){
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: Warning,
+        backgroundColor: warning,
         content: const Padding(
           padding: EdgeInsets.all(2.0),
           child: Text("Por favor, mantenga pulsado para hablar", style: TextStyle(color: Colors.white),),
@@ -102,8 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final chatProvider = Provider.of<ChatProvider>(context);
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       drawer: const MenuWidget(),
       appBar: AppBar(
+        elevation: 0,
         backgroundColor: scaffoldBackgroundColor,
         leading: Builder(
           builder: (BuildContext context) {
@@ -137,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     right: 16,
                     bottom: 16,
                     child: FloatingActionButton(
-                      backgroundColor: AccentTwo,
+                      backgroundColor: accentTwo,
                       onPressed: () {
                         _scrollController.animateTo(
                           _scrollController.position.maxScrollExtent,

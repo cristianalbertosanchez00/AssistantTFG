@@ -12,13 +12,9 @@ class MenuWidget extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-             DrawerHeader(
-              decoration: BoxDecoration(
-                color: cardColor,
-              ),
-              child: const Text('Menú', style: TextStyle(color: Colors.white),),
-            ),
+            const SizedBox(height: 20,),
             ListTile(
+              
               title: const Text('Item 1',style: TextStyle(color: Colors.white),),
               onTap: () {
                 // Aquí puedes agregar la acción que se ejecutará al presionar el Item 1.
