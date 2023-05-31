@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:assistant_tfg/themes/theme.dart';
+import 'package:assistant_tfg/widgets/text_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:avatar_glow/avatar_glow.dart';
@@ -15,15 +16,19 @@ class CommunicationButtons extends StatefulWidget {
   final VoidCallback onShortPress;
   final VoidCallback toggleChatVisibility;
   final ChatProvider chatProvider;
+  final String conversationId;
+  final int lenght;
 
-  const CommunicationButtons({
-    Key? key,
-    required this.toggleChatVisibility,
-    required this.onStop,
-    required this.chatProvider,
-    required this.setIsTyping,
-    required this.onShortPress,
-  }) : super(key: key);
+  const CommunicationButtons(
+      {Key? key,
+      required this.toggleChatVisibility,
+      required this.onStop,
+      required this.chatProvider,
+      required this.setIsTyping,
+      required this.onShortPress,
+      required this.conversationId,
+      required this.lenght})
+      : super(key: key);
 
   @override
   State<CommunicationButtons> createState() => _CommunicationButtonsState();
@@ -34,7 +39,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
   final _audioRecorder = Record();
   StreamSubscription<RecordState>? _recordSub;
   RecordState _recordState = RecordState.stop;
-  
+
   @override
   void initState() {
     _recordSub = _audioRecorder.onStateChanged().listen((recordState) {
@@ -164,6 +169,20 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
   }
 
   Future<void> _sendAudioMessage(String audioPath) async {
+    if (widget.lenght >= 12) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: TextWidget(
+              label:
+                  "Has alcanzado el límite de mensajes en esta conversación. Inicia una nueva conversación.",
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
     try {
       // Espera a que la transcripción esté completa antes de continuar
       widget.setIsTyping(true);
@@ -174,20 +193,22 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
       if (transcribedText.isNotEmpty) {
         // Agrega el texto transcrito como un mensaje de usuario y envíalo a ChatGPT
         widget.chatProvider.addUserMessage(msg: transcribedText);
-        await widget.chatProvider
-            .sendMessageAndGetAnswers(msg: transcribedText);
+        await widget.chatProvider.sendMessageAndGetAnswers(
+            msg: transcribedText, conversationId: widget.conversationId);
       }
 
       widget.setIsTyping(false);
     } catch (error) {
       // Muestra un SnackBar con el mensaje de error y un fondo rojo
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-          'Error en el envío',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: Colors.red,
-      ));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+            'Error en el envío',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ));
+      }
     }
   }
 

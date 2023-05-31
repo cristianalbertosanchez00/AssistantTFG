@@ -1,5 +1,6 @@
 import 'package:assistant_tfg/views/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -45,14 +46,31 @@ class AuthenticationRepository {
 
 /*-----------------------Email & Password sign-in ----------------------------*/
 
-  /// [EmailAuthenticationLOGIN] - LOGIN
-  Future<UserCredential> loginWithEmailAndPassword(
-      String email, String password) async {
+/// [EmailAuthenticationLOGIN] - LOGIN
+Future<UserCredential?> loginWithEmailAndPassword(
+    String email, String password, BuildContext context) async {
+  try {
     UserCredential userCredential = await FirebaseAuth.instance
         .signInWithEmailAndPassword(email: email, password: password);
 
     return userCredential;
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'wrong-password') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'The password is incorrect',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+
+    return null;
   }
+}
+
 
   /// [EmailAuthenticationREGISTER] - REGISTER
   Future<UserCredential> registerWithEmail(
@@ -87,23 +105,47 @@ class AuthenticationRepository {
 
   /// [GoogleAuthentication]
   Future<UserCredential> signInWithGoogle() async {
-    final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+    GoogleSignInAccount? googleUser;
+
+    try {
+      // Attempt to sign in without user interaction
+      googleUser = await _googleSignIn.signInSilently();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error in signInSilently: $e');
+      }
+    }
+
+    if (googleUser == null) {
+      try {
+        // If silent sign in fails, attempt to sign in with user interaction
+        googleUser = await _googleSignIn.signIn();
+      } catch (e) {
+        if (kDebugMode) {
+          print('Error in signIn: $e');
+        }
+        rethrow; // Re-throw the exception to be handled by calling function
+      }
+    }
+
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
+
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
+
     final userCredential = await _firebaseAuth.signInWithCredential(credential);
 
-    // Almacena la información del usuario en Firestore
+    // Store user information in Firestore
     await FirebaseFirestore.instance
         .collection('users')
         .doc(userCredential.user?.uid)
         .set({
       'email': userCredential.user?.email,
       'provider': 'google',
-      // Agregar otros datos del usuario que quieras almacenar
+      // Add other user information you wish to store
     });
 
     return userCredential;
@@ -111,7 +153,7 @@ class AuthenticationRepository {
 
   Future<void> signOut(BuildContext context) async {
     Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
         (Route<dynamic> route) => false);
     await _googleSignIn.signOut();
     await _firebaseAuth.signOut();

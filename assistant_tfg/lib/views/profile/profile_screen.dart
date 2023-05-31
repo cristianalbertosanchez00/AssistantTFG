@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 }
               } else {
-                return CircularProgressIndicator();
+                return const CircularProgressIndicator();
               }
             },
           ),

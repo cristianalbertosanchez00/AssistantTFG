@@ -8,10 +8,16 @@ import '../../main.dart';
 import '../../repository/auth_repository.dart';
 import 'login_register.dart';
 
-class LoginScreen extends StatelessWidget {
-  final TextEditingController emailController = TextEditingController();
+class LoginScreen extends StatefulWidget {
 
-  LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController emailController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +134,8 @@ class LoginScreen extends StatelessWidget {
                       authRepo
                           .signInWithGoogle()
                           .then((UserCredential userCredential) {
+                                    if (!mounted) return; // Add this line to check if the widget is still in the tree
+
                         if (userCredential.user != null) {
                           // El usuario ha iniciado sesión correctamente
                           // Navegar a la pantalla principal

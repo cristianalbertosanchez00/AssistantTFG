@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import '../../main.dart';
 import '../../repository/auth_repository.dart';
 
-class LoginRegister extends StatelessWidget {
+class LoginRegister extends StatefulWidget {
   final TextEditingController emailController;
   final Future<bool> emailExists;
   final TextEditingController passwordController;
@@ -21,12 +21,17 @@ class LoginRegister extends StatelessWidget {
         super(key: key);
 
   @override
+  State<LoginRegister> createState() => _LoginRegisterState();
+}
+
+class _LoginRegisterState extends State<LoginRegister> {
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     void validatePassword() {
-      final String password = passwordController.text;
-      final String confirmPassword = confirmPasswordController.text;
+      final String password = widget.passwordController.text;
+      final String confirmPassword = widget.confirmPasswordController.text;
       if (password != confirmPassword) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -43,7 +48,7 @@ class LoginRegister extends StatelessWidget {
     }
 
     return FutureBuilder<bool>(
-      future: emailExists,
+      future: widget.emailExists,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -96,7 +101,7 @@ class LoginRegister extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     TextField(
-                      controller: emailController,
+                      controller: widget.emailController,
                       style: const TextStyle(color: Colors.black),
                       decoration: InputDecoration(
                         filled: true,
@@ -110,7 +115,7 @@ class LoginRegister extends StatelessWidget {
                     const SizedBox(height: 20),
                     if (!emailExists) ...[
                       TextField(
-                        controller: passwordController,
+                        controller: widget.passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           filled: true,
@@ -123,7 +128,7 @@ class LoginRegister extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
                       TextField(
-                        controller: confirmPasswordController,
+                        controller: widget.confirmPasswordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           filled: true,
@@ -137,7 +142,7 @@ class LoginRegister extends StatelessWidget {
                       const SizedBox(height: 20),
                     ] else ...[
                       TextField(
-                        controller: passwordController,
+                        controller: widget.passwordController,
                         obscureText: true,
                         decoration: InputDecoration(
                           filled: true,
@@ -153,34 +158,51 @@ class LoginRegister extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (!emailExists) {
                             validatePassword;
-                            final BuildContext currentContext = context;
+
                             final authRepo =
-                                Provider.of<AuthenticationRepository>(
-                                    currentContext,
+                                Provider.of<AuthenticationRepository>(context,
                                     listen: false);
-                            authRepo.registerWithEmail(
-                                emailController.text, passwordController.text);
-                            Navigator.pushReplacement(
-                              currentContext,
-                              MaterialPageRoute(
-                                  builder: (context) => const MainScreen()),
-                            );
+
+                            try {
+                              await authRepo.registerWithEmail(
+                                  widget.emailController.text,
+                                  widget.passwordController.text);
+
+                              final BuildContext currentContext =
+                                  context; // Obtén el contexto aquí
+                              Navigator.pushReplacement(
+                                currentContext,
+                                MaterialPageRoute(
+                                    builder: (context) => const MainScreen()),
+                              );
+                            } catch (e) {
+                              // Manejo del error
+                            }
                           } else {
-                            final BuildContext currentContext = context;
                             final authRepo =
-                                Provider.of<AuthenticationRepository>(
-                                    currentContext,
+                                Provider.of<AuthenticationRepository>(context,
                                     listen: false);
-                            authRepo.loginWithEmailAndPassword(
-                                emailController.text, passwordController.text);
-                            Navigator.pushReplacement(
-                              currentContext,
-                              MaterialPageRoute(
-                                  builder: (context) => const MainScreen()),
-                            );
+
+                            UserCredential? userCredential =
+                                await authRepo.loginWithEmailAndPassword(
+                                    widget.emailController.text,
+                                    widget.passwordController.text,
+                                    context);
+
+                            if (userCredential != null) {
+                              final BuildContext currentContext =
+                                  context; // Y aquí también
+                              Navigator.pushReplacement(
+                                currentContext,
+                                MaterialPageRoute(
+                                    builder: (context) => const MainScreen()),
+                              );
+                            } else {
+                              // Manejo del error o simplemente no hagas nada.
+                            }
                           }
                         },
                         style: ElevatedButton.styleFrom(

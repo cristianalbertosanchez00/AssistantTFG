@@ -1,35 +1,30 @@
 import 'package:assistant_tfg/themes/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/conversation_provider.dart';
 
 class MenuWidget extends StatelessWidget {
-  const MenuWidget({super.key});
+  const MenuWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final conversationProvider = Provider.of<ConversationProvider>(context);
+    final conversations = conversationProvider.conversations;
+
     return Drawer(
-      child: Container(
-        color: scaffoldBackgroundColor,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            const SizedBox(height: 20,),
-            ListTile(
-              
-              title: const Text('Item 1',style: TextStyle(color: Colors.white),),
-              onTap: () {
-                // Aquí puedes agregar la acción que se ejecutará al presionar el Item 1.
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Item 2',style: TextStyle(color: Colors.white),),
-              onTap: () {
-                // Aquí puedes agregar la acción que se ejecutará al presionar el Item 2.
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
+      backgroundColor: scaffoldBackgroundColor,
+      child: ListView(
+        children: conversations.map((conversation) {
+          return ListTile(
+            title: Text(conversation.lastMessage, style: const TextStyle(color: Colors.white),),
+            onTap: () {
+              conversationProvider
+                  .selectConversation(conversation.conversationId);
+              Navigator.pop(context);
+            },
+          );
+        }).toList(),
       ),
     );
   }
