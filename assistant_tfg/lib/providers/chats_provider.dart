@@ -127,11 +127,11 @@ class ChatProvider with ChangeNotifier {
       bool envioNormal = true;
       if (flag) {
         mensaje =
-            "Eres capaz de ver imagenes que yo te paso a través de un software de etiquetado de imagenes lo que estas viendo es (en inglés): $msg , COMENTA ALGO INTERESANTE SOBRE ELLO";
+            "AHORA ERES CAPAZ DE VER IMÁGENES (gracias a un software de etiquetado de imagenes), LO QUE TE ESTOY ENSEÑANDO/ENVIANDO ES: $msg, aunque este en inglés, responde en español y COMENTA ALGO INTERESANTE SOBRE ELLO. (Responde SOLO el comentario interesante, no digas nada acerca de tu nueva habilidad de ver imágenes)";
         envioNormal = false;
       } else if (!flag && contexto != "") {mensaje = contexto+msg;envioNormal=false;}
       List<ChatModel> apiResponses = await ApiService.sendMessageGPT(
-          message: envioNormal? mensaje : msg);
+          message: envioNormal? msg : mensaje);
 
 // Agrega los mensajes de la API a la lista de chat
       chatList.addAll(apiResponses);
