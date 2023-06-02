@@ -68,6 +68,7 @@ class _LoginRegisterState extends State<LoginRegister> {
         return Scaffold(
           extendBodyBehindAppBar: true,
           appBar: AppBar(
+            backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),

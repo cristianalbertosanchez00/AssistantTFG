@@ -52,6 +52,7 @@ dependencies:
   cloud_firestore: ^4.7.1
   email_validator: ^2.1.17
   uuid: ^3.0.4
+  image_picker: ^0.8.7+5
   
 flutter_native_splash:
   color: "#022833"

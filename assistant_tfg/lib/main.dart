@@ -1,4 +1,4 @@
-import 'package:assistant_tfg/providers/conversation_provider.dart';
+//import 'package:assistant_tfg/providers/conversation_provider.dart';
 import 'package:assistant_tfg/repository/auth_repository.dart';
 import 'package:assistant_tfg/views/login/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,9 +33,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => ChatProvider(),
         ),
-        ChangeNotifierProvider(
+        /*ChangeNotifierProvider(
           create: (_) => ConversationProvider(),
-        ),
+        ),*/
         Provider<AuthenticationRepository>(
           create: (_) => AuthenticationRepository(),
         ),
@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
               scaffoldBackgroundColor: scaffoldBackgroundColor,
+              primaryColor: accentTwo,
               appBarTheme: AppBarTheme(
                 color: cardColor,
               )),

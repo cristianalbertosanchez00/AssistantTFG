@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../providers/conversation_provider.dart';
+//import '../../providers/conversation_provider.dart';
 import '../../widgets/communication_buttons_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -12,7 +12,7 @@ import '../../themes/theme.dart';
 import '../../providers/chats_provider.dart';
 import '../../widgets/chat_widget.dart';
 import '../../widgets/text_input_widget.dart';
-import '../../widgets/menu_widget.dart';
+//import '../../widgets/menu_widget.dart';
 import '../../widgets/text_widget.dart';
 import '../../utils/scroll_functions.dart';
 
@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
       audiopath = path;
     });
     if (kDebugMode) print('Recorded file path: $audiopath');
-    // Luego puedes usar 'audioPath' para pasarlo a tu API.
+    //Path de memoria guardado para pasarselo a API
   }
 
   void _scrollListener() {
@@ -106,10 +106,10 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         });
       }
-      initializeConversationProvider();
+      //initializeConversationProvider();
     });
   }
-
+/*
   void initializeConversationProvider() {
     var conversationProvider =
         Provider.of<ConversationProvider>(context, listen: false);
@@ -131,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
   }
-
+*/
   @override
   void dispose() {
     _scrollController.dispose();
@@ -157,21 +157,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
       return Scaffold(
         extendBodyBehindAppBar: true,
-        drawer: const MenuWidget(),
+        //drawer: const MenuWidget(),
         appBar: AppBar(
           elevation: 0,
           backgroundColor: scaffoldBackgroundColor,
-          leading: Builder(
-            builder: (BuildContext context) {
-              return IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-              );
-            },
+          leading: Padding(
+            padding: const EdgeInsets.only(left:5, top:8),
+            child: Image.asset("assets/images/logo.png", height: 15,),
           ),
-          actions: <Widget>[
+          ),
+         /* actions: <Widget>[
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () async {
@@ -196,8 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               },
             ),
-          ],
-        ),
+          ],*/
+        
         body: Column(
           children: [
             // Primera sección: lista de mensajes y botón de ir hacia abajo
@@ -274,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> sendMessageFCT({required ChatProvider chatProvider}) async {
-    if (chatProvider.getChatList.length >= 12) {
+   /* if (chatProvider.getChatList.length >= 12) {
       // Si ya se han enviado 12 mensajes (6 mensajes del usuario y 6 respuestas de la IA) en esta conversación, mostramos un mensaje y no enviamos más mensajes.
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -286,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
       return;
-    }
+    }*/
 
     if (_isTyping) {
       _scrollToEnd();

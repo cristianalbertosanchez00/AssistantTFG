@@ -5,15 +5,12 @@ import 'package:http/http.dart' as http;
 import '../config/api_consts.dart';
 import '../models/chat_model.dart';
 
-
 class ApiService {
-
-
   // Send Message using ChatGPT API
-  static Future<List<ChatModel>> sendMessageGPT(
-      {required String message,}) async {
+  static Future<List<ChatModel>> sendMessageGPT({
+    required String message,
+  }) async {
     try {
-      
       var response = await http.post(
         Uri.parse("$baseURL/chat/completions"),
         headers: {
@@ -26,7 +23,8 @@ class ApiService {
             "messages": [
               {
                 "role": "user",
-                "content": "Actua como un asistente virtual llamado Jarvis (capaz de oir a través del microfono del dispositivo), no hace falta que te presentes a no ser que te salude o te pregunte, a continuación verás mi promp: $message",
+                "content":
+                    "Actua como un asistente virtual llamado Jarvis (capaz de oir a través del microfono del dispositivo), no hace falta que te presentes a no ser que te salude o te pregunte, a continuación verás mi promp: $message",
               }
             ]
           },
@@ -58,10 +56,10 @@ class ApiService {
   }
 
   // Send Message fct
-  static Future<List<ChatModel>> sendMessage(
-      {required String message,}) async {
+  static Future<List<ChatModel>> sendMessage({
+    required String message,
+  }) async {
     try {
-      
       var response = await http.post(
         Uri.parse("$baseURL/completions"),
         headers: {
@@ -102,35 +100,71 @@ class ApiService {
     }
   }
 
+  static Future<String> sendAudioMessage({required String audioPath}) async {
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://api.openai.com/v1/audio/transcriptions'),
+      );
 
-static Future<String> sendAudioMessage({required String audioPath}) async {
-  try {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://api.openai.com/v1/audio/transcriptions'),
+      request.headers.addAll({
+        'Authorization': 'Bearer $apiKey',
+      });
+
+      request.fields['model'] = 'whisper-1';
+      request.files.add(await http.MultipartFile.fromPath('file', audioPath));
+
+      var response = await request.send();
+      var responseData = await response.stream.bytesToString();
+      Map jsonResponse = json.decode(responseData);
+
+      if (jsonResponse['error'] != null) {
+        throw HttpException(jsonResponse['error']["message"]);
+      }
+
+      return jsonResponse['text'] ?? '';
+    } catch (error) {
+      log("error $error");
+      rethrow;
+    }
+  }
+
+  static Future<String> getRecognisedText(String imagePath) async {
+    final bytes = File(imagePath).readAsBytesSync();
+    String img64 = base64Encode(bytes);
+    var url = Uri.parse(
+        'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyD1WNbjRNO-dd93vUgrs_HlJJNtnbbzm7g');
+    var response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(
+        {
+          "requests": [
+            {
+              "image": {"content": img64},
+              "features": [
+                {"type": "TEXT_DETECTION"}
+              ]
+            }
+          ]
+        },
+      ),
     );
+    var result = jsonDecode(response.body);
 
-    request.headers.addAll({
-      'Authorization': 'Bearer $apiKey',
-    });
-
-    request.fields['model'] = 'whisper-1';
-    request.files.add(await http.MultipartFile.fromPath('file', audioPath));
-
-    var response = await request.send();
-    var responseData = await response.stream.bytesToString();
-    Map jsonResponse = json.decode(responseData);
-
-    if (jsonResponse['error'] != null) {
-      throw HttpException(jsonResponse['error']["message"]);
+    if (result['error'] != null && result['error']['message'] != null) {
+      throw Exception(result['error']['message']);
     }
 
-    return jsonResponse['text'] ?? '';
-  } catch (error) {
-    log("error $error");
-    rethrow;
+    if (result['responses'] != null && result['responses'].isNotEmpty) {
+      if (result['responses'][0]['textAnnotations'] != null &&
+          result['responses'][0]['textAnnotations'].isNotEmpty) {
+        return result['responses'][0]['textAnnotations'][0]['description'];
+      } else {
+        throw Exception('textAnnotations is empty or null');
+      }
+    } else {
+      throw Exception('responses is empty or null');
+    }
   }
-}
-
-
 }

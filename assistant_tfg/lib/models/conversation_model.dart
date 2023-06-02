@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+/*import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Conversation {
   final String conversationId;
@@ -18,4 +18,4 @@ class Conversation {
       lastActivity: (json['lastActivity'] as Timestamp).toDate(),
     );
   }
-}
+}*/
