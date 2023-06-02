@@ -75,7 +75,7 @@ class ChatProvider with ChangeNotifier {
     }
   }
 
-Future<String> createNewConversation(String userId) async {
+  Future<String> createNewConversation(String userId) async {
     try {
       // Genera un nuevo ID de conversación
       var newConversationId = const Uuid().v4();
@@ -99,14 +99,12 @@ Future<String> createNewConversation(String userId) async {
       }
       rethrow;
     }
-}
+  }
 
-void clearChatList() {
-  // Limpia la lista de mensajes actuales
-  getChatList.clear();
-}
-
-
+  void clearChatList() {
+    // Limpia la lista de mensajes actuales
+    getChatList.clear();
+  }
 
   List<ChatModel> get getChatList {
     return chatList;
@@ -118,12 +116,22 @@ void clearChatList() {
   }
 
   Future<void> sendMessageAndGetAnswers(
-      {required String msg, required String conversationId}) async {
+      {required String msg,
+      required String conversationId,
+      bool flag = false,
+      String contexto = ""}) async {
     try {
       // Envía el mensaje y recibe las respuestas
       // Envía el mensaje y recibe las respuestas
-      List<ChatModel> apiResponses =
-          await ApiService.sendMessageGPT(message: msg);
+      String mensaje = "";
+      bool envioNormal = true;
+      if (flag) {
+        mensaje =
+            "Eres capaz de ver imagenes que yo te paso a través de un software de etiquetado de imagenes lo que estas viendo es (en inglés): $msg , COMENTA ALGO INTERESANTE SOBRE ELLO";
+        envioNormal = false;
+      } else if (!flag && contexto != "") {mensaje = contexto+msg;envioNormal=false;}
+      List<ChatModel> apiResponses = await ApiService.sendMessageGPT(
+          message: envioNormal? mensaje : msg);
 
 // Agrega los mensajes de la API a la lista de chat
       chatList.addAll(apiResponses);
@@ -138,7 +146,7 @@ void clearChatList() {
           {
             'id': chatList.length,
             'emisor': 'usuario',
-            'mensaje': msg,
+            'mensaje': flag ? "[Envio de fotografía]" : msg,
             'timestamp': Timestamp.now(),
           },
         ]),

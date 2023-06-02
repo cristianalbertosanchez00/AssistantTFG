@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:assistant_tfg/themes/theme.dart';
-import 'package:assistant_tfg/widgets/text_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:avatar_glow/avatar_glow.dart';
@@ -20,6 +19,7 @@ class CommunicationButtons extends StatefulWidget {
   final ChatProvider chatProvider;
   final String conversationId;
   final int lenght;
+  final String? contexto;
 
   const CommunicationButtons(
       {Key? key,
@@ -29,6 +29,7 @@ class CommunicationButtons extends StatefulWidget {
       required this.setIsTyping,
       required this.onShortPress,
       required this.conversationId,
+      this.contexto,
       required this.lenght})
       : super(key: key);
 
@@ -174,7 +175,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
 
   Future pickImageGalleryOrPhoto() async {
     try {
-            widget.setIsTyping(true);
+      widget.setIsTyping(true);
 
       final pickedImage =
           await ImagePicker().pickImage(source: ImageSource.camera);
@@ -182,14 +183,17 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
         imageFile = pickedImage;
         final textoReconocido =
             await ApiService.getLabelFromImage(pickedImage.path);
-         if (textoReconocido.isNotEmpty) {
-        // Agrega el texto transcrito como un mensaje de usuario y envíalo a ChatGPT
-        widget.chatProvider.addUserMessage(msg: "[Envio de fotografía]");
-        await widget.chatProvider.sendMessageAndGetAnswers(
-            msg: "Eres capaz de ver imagenes que yo te paso a través de un software de etiquetado de imagenes lo que estas viendo es: $textoReconocido , COMENTA ALGO SOBRE ELLO", conversationId: widget.conversationId);
-      }
+        if (textoReconocido.isNotEmpty) {
+          widget.chatProvider.addUserMessage(
+            msg: "[Envio de fotografía]",
+          );
+          await widget.chatProvider.sendMessageAndGetAnswers(
+              msg: textoReconocido,
+              conversationId: widget.conversationId,
+              flag: true);
+        }
 
-      widget.setIsTyping(false);
+        widget.setIsTyping(false);
       }
     } on PlatformException catch (e) {
       if (kDebugMode) {
@@ -203,37 +207,20 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
   }
 
   Future<void> _sendAudioMessage(String audioPath) async {
-    /*if (widget.lenght >= 12) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: TextWidget(
-              label:
-                  "Has alcanzado el límite de mensajes en esta conversación. Inicia una nueva conversación.",
-            ),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-      return;
-    }*/
     try {
-      // Espera a que la transcripción esté completa antes de continuar
       widget.setIsTyping(true);
 
       String transcribedText =
           await ApiService.sendAudioMessage(audioPath: audioPath);
 
       if (transcribedText.isNotEmpty) {
-        // Agrega el texto transcrito como un mensaje de usuario y envíalo a ChatGPT
         widget.chatProvider.addUserMessage(msg: transcribedText);
         await widget.chatProvider.sendMessageAndGetAnswers(
-            msg: transcribedText, conversationId: widget.conversationId);
+            msg: transcribedText, conversationId: widget.conversationId, contexto: widget.contexto!);
       }
 
       widget.setIsTyping(false);
     } catch (error) {
-      // Muestra un SnackBar con el mensaje de error y un fondo rojo
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(

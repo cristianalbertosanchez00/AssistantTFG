@@ -1,14 +1,15 @@
 import '../themes/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'text_widget.dart';
 
 class ChatWidget extends StatelessWidget {
   const ChatWidget({
-    super.key,
+    Key? key,
     required this.msg,
     required this.chatIndex,
-  });
+  }) : super(key: key);
 
   final String msg;
   final int chatIndex;
@@ -41,7 +42,20 @@ class ChatWidget extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                             vertical: 10, horizontal: 12.0),
-                        child: TextWidget(label: msg),
+                        child: SelectableText(
+                          msg,
+                          style: const TextStyle( fontSize: 16,
+                            color: Colors.white,
+                          ),
+                          onTap: () {
+                            Clipboard.setData(ClipboardData(text: msg));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Mensaje copiado al portapapeles'),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   ),

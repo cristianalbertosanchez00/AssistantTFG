@@ -1,9 +1,6 @@
 import 'dart:developer';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-
-//import '../../providers/conversation_provider.dart';
 import '../../widgets/communication_buttons_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -12,7 +9,6 @@ import '../../themes/theme.dart';
 import '../../providers/chats_provider.dart';
 import '../../widgets/chat_widget.dart';
 import '../../widgets/text_input_widget.dart';
-//import '../../widgets/menu_widget.dart';
 import '../../widgets/text_widget.dart';
 import '../../utils/scroll_functions.dart';
 
@@ -24,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  //Definición de variables
   bool _showButtons = true;
   bool _isTyping = false;
   bool _showScrollDownButton = false;
@@ -33,15 +30,18 @@ class _HomeScreenState extends State<HomeScreen> {
   late TextEditingController textEditingController;
   late ScrollController _scrollController;
   late FocusNode focusNode;
+  String prevMsg1 = '';
+  String prevMsg2 = '';
 
+  // Callback cuando la grabación de audio se detiene
   void _onAudioRecordingStop(String path) {
     setState(() {
       audiopath = path;
     });
-    if (kDebugMode) print('Recorded file path: $audiopath');
-    //Path de memoria guardado para pasarselo a API
+    if (kDebugMode) print('Ruta del archivo grabado: $audiopath');
   }
 
+  // Listener para el desplazamiento en la lista de chats
   void _scrollListener() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent) {
@@ -55,10 +55,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Desplazar hacia el final de la lista de chats
   void _scrollToEnd() {
     scrollToEnd(_scrollController);
   }
 
+  // Mostrar mensaje de error de grabación
   void _showFailRecordingMessage() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -75,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // Alternar la visibilidad del chat
   void _toggleChatVisibility() {
     setState(() {
       _showButtons = !_showButtons;
@@ -106,32 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         });
       }
-      //initializeConversationProvider();
     });
   }
-/*
-  void initializeConversationProvider() {
-    var conversationProvider =
-        Provider.of<ConversationProvider>(context, listen: false);
-    var chatProvider = Provider.of<ChatProvider>(context, listen: false);
 
-    var userId = FirebaseAuth.instance.currentUser?.uid;
-    conversationProvider.loadConversations(userId!);
-
-    var selectedConversationId = conversationProvider.selectedConversationId;
-    if (selectedConversationId != null) {
-      chatProvider.loadConversation(selectedConversationId, userId);
-    }
-
-    conversationProvider.addListener(() {
-      var newSelectedConversationId =
-          conversationProvider.selectedConversationId;
-      if (newSelectedConversationId != null) {
-        chatProvider.loadConversation(newSelectedConversationId, userId);
-      }
-    });
-  }
-*/
   @override
   void dispose() {
     _scrollController.dispose();
@@ -141,61 +121,34 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  ///[USER_INTERFACE]
+  ///--------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final chatProvider = Provider.of<ChatProvider>(context);
 
     if (_isLoading) {
-      // Si estamos cargando, mostramos el indicador de carga
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
       );
     } else {
-      // Si no, mostramos el resto de la interfaz de usuario
-
       return Scaffold(
         extendBodyBehindAppBar: true,
-        //drawer: const MenuWidget(),
         appBar: AppBar(
           elevation: 0,
           backgroundColor: scaffoldBackgroundColor,
           leading: Padding(
-            padding: const EdgeInsets.only(left:5, top:8),
-            child: Image.asset("assets/images/logo.png", height: 15,),
-          ),
-          ),
-         /* actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () async {
-                var userId = FirebaseAuth.instance.currentUser?.uid;
-                if (userId != null) {
-                  // Crea una nueva conversación y obtiene su ID
-                  var newConversationId =
-                      await chatProvider.createNewConversation(userId);
-
-                  // Limpia la lista de chat actual
-                  chatProvider.clearChatList();
-
-                  // Carga la nueva conversación en el chatProvider
-                  chatProvider.loadConversation(newConversationId, userId);
-
-                  var conversationProvider =
-                      Provider.of<ConversationProvider>(context, listen: false);
-                  conversationProvider.selectConversation(newConversationId);
-                } else {
-                  // Manejar el caso en el que el userId sea nulo
-                  return;
-                }
-              },
+            padding: const EdgeInsets.only(left: 5, top: 8),
+            child: Image.asset(
+              "assets/images/logo.png",
+              height: 15,
             ),
-          ],*/
-        
+          ),
+        ),
         body: Column(
           children: [
-            // Primera sección: lista de mensajes y botón de ir hacia abajo
             Expanded(
               child: Stack(
                 children: [
@@ -234,7 +187,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 size: 18,
               ),
             ],
-            // Segunda sección: botones e input widget
             if (!_showButtons)
               Material(
                 color: scaffoldBackgroundColor,
@@ -250,6 +202,8 @@ class _HomeScreenState extends State<HomeScreen> {
             else
               CommunicationButtons(
                 toggleChatVisibility: _toggleChatVisibility,
+                // Llamamos a getChatContext para obtener el contexto actualizado
+                contexto: getChatContext(chatProvider),
                 onStop: _onAudioRecordingStop,
                 onShortPress: _showFailRecordingMessage,
                 chatProvider: Provider.of<ChatProvider>(context, listen: false),
@@ -268,21 +222,27 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> sendMessageFCT({required ChatProvider chatProvider}) async {
-   /* if (chatProvider.getChatList.length >= 12) {
-      // Si ya se han enviado 12 mensajes (6 mensajes del usuario y 6 respuestas de la IA) en esta conversación, mostramos un mensaje y no enviamos más mensajes.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: TextWidget(
-            label:
-                "Has alcanzado el límite de mensajes en esta conversación. Inicia una nueva conversación.",
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }*/
+  String getChatContext(ChatProvider chatProvider) {
+    String prevMsg1, prevMsg2;
+    if (chatProvider.getChatList.length >= 2) {
+      prevMsg1 =
+          chatProvider.getChatList[chatProvider.getChatList.length - 2].msg;
+      prevMsg2 =
+          chatProvider.getChatList[chatProvider.getChatList.length - 1].msg;
+    } else if (chatProvider.getChatList.length == 1) {
+      prevMsg1 = '';
+      prevMsg2 = chatProvider.getChatList[0].msg;
+    } else {
+      prevMsg1 = '';
+      prevMsg2 = '';
+    }
+    return "(contexto de los 2 mensajes previos del usuario: -$prevMsg1 -$prevMsg2) MENSAJE ACTUAL:";
+  }
 
+  ///[ENVIAR_MENSAJES_CHATGPT_ESCRITO]
+  ///-------------------------------------------------------------------------
+  Future<void> sendMessageFCT({required ChatProvider chatProvider}) async {
+    String contexto = getChatContext(chatProvider);
     if (_isTyping) {
       _scrollToEnd();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -323,15 +283,14 @@ class _HomeScreenState extends State<HomeScreen> {
         if (userId != null) {
           await chatProvider.createNewConversation(userId);
         } else {
-          // Manejar el caso en el que el userId sea nulo
           return;
         }
       }
 
       await chatProvider.sendMessageAndGetAnswers(
-        msg: msg,
-        conversationId: chatProvider.currentConversationId!,
-      );
+          msg: msg,
+          conversationId: chatProvider.currentConversationId!,
+          contexto: contexto);
 
       setState(() {});
     } catch (error) {
@@ -351,7 +310,4 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
-
-
-  
 }
