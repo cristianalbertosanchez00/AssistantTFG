@@ -22,14 +22,14 @@ class _ActionsScreenState extends State<ActionsScreen> {
   String scannedText = "";
 
   Future pickImageGalleryOrPhoto(
-      ImageSource imageSource, ButtonType buttonType) async {
+      ImageSource imageSource, ButtonType buttonType, bool byHand) async {
     try {
       final pickedImage = await ImagePicker().pickImage(source: imageSource);
       if (pickedImage != null) {
         imageFile = pickedImage;
         setState(() {});
         final textoReconocido =
-            await ApiService.getRecognisedText(pickedImage.path);
+            await ApiService.getRecognisedText(pickedImage.path, byHand);
         // ignore: use_build_context_synchronously
         Navigator.push(
           context,
@@ -52,9 +52,11 @@ class _ActionsScreenState extends State<ActionsScreen> {
     }
   }
 
-  ButtonType? selectedButtonType;
+  ButtonType? selectedButtonTypeGrid1;
+  ButtonType? selectedButtonTypeGrid2;
 
-  Future<void> _showImageSourceDialog(ButtonType buttonType) async {
+  Future<void> _showImageSourceDialog(
+      ButtonType buttonType, bool byHand) async {
     final source = await showDialog<ImageSource>(
       context: context,
       builder: (BuildContext context) {
@@ -86,11 +88,17 @@ class _ActionsScreenState extends State<ActionsScreen> {
 
     setState(() {
       if (source != null) {
-        selectedButtonType = buttonType;
+        if (byHand) {
+          selectedButtonTypeGrid2 = buttonType;
+          selectedButtonTypeGrid1 = null;
+        } else {
+          selectedButtonTypeGrid1 = buttonType;
+          selectedButtonTypeGrid2 = null;
+        }
       }
     });
     if (source != null) {
-      pickImageGalleryOrPhoto(source, buttonType);
+      pickImageGalleryOrPhoto(source, buttonType, byHand);
     }
   }
 
@@ -109,25 +117,90 @@ class _ActionsScreenState extends State<ActionsScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(
-                height: 70,
+                height: 40,
               ),
-              const Text(
-                'Acciones',
-                textAlign: TextAlign.left,
-                style: TextStyle(fontSize: 32, color: Colors.white),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Acciones',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(
-                height: 20,
+                height: 30,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TEXTO ',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
               GridView.count(
                 shrinkWrap: true,
                 crossAxisCount: 2,
-                childAspectRatio: 1.5,
+                childAspectRatio: 2,
                 children: [
-                  _buildButton('Resumir Texto', ButtonType.resumir),
-                  _buildButton('Explicar Texto', ButtonType.explicar),
-                  _buildButton('Mejorar Gramática', ButtonType.gramatica),
-                  _buildButton('Mejorar Ortografía', ButtonType.ortografia),
+                  _buildButton('Resumir Texto', ButtonType.resumir, false,
+                      selectedButtonTypeGrid1 == ButtonType.resumir),
+                  _buildButton('Explicar Texto', ButtonType.explicar, false,
+                      selectedButtonTypeGrid1 == ButtonType.explicar),
+                  _buildButton('Mejorar Gramática', ButtonType.gramatica, false,
+                      selectedButtonTypeGrid1 == ButtonType.gramatica),
+                  _buildButton('Mejorar Ortografía', ButtonType.ortografia,
+                      false, selectedButtonTypeGrid1 == ButtonType.ortografia),
+                ],
+              ),
+              const SizedBox(
+                height: 25,
+              ),
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TEXTO A MANO',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              GridView.count(
+                shrinkWrap: true,
+                crossAxisCount: 2,
+                childAspectRatio: 2,
+                children: [
+                  _buildButton('Resumir Texto', ButtonType.resumir, true,
+                      selectedButtonTypeGrid2 == ButtonType.resumir),
+                  _buildButton('Explicar Texto', ButtonType.explicar, true,
+                      selectedButtonTypeGrid2 == ButtonType.explicar),
+                  _buildButton('Mejorar Gramática', ButtonType.gramatica, true,
+                      selectedButtonTypeGrid2 == ButtonType.gramatica),
+                  _buildButton('Mejorar Ortografía', ButtonType.ortografia,
+                      true, selectedButtonTypeGrid2 == ButtonType.ortografia),
                 ],
               ),
             ],
@@ -137,8 +210,8 @@ class _ActionsScreenState extends State<ActionsScreen> {
     );
   }
 
-  Widget _buildButton(String text, ButtonType buttonType) {
-    final isSelected = selectedButtonType == buttonType;
+  Widget _buildButton(
+      String text, ButtonType buttonType, bool byHand, bool isSelected) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: GestureDetector(
@@ -154,7 +227,7 @@ class _ActionsScreenState extends State<ActionsScreen> {
             ),
           ),
         ),
-        onTap: () => _showImageSourceDialog(buttonType),
+        onTap: () => _showImageSourceDialog(buttonType, byHand),
       ),
     );
   }

@@ -4,6 +4,8 @@ import 'package:assistant_tfg/widgets/text_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:avatar_glow/avatar_glow.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
 import 'package:assistant_tfg/services/api_service.dart';
 import 'package:assistant_tfg/providers/chats_provider.dart';
@@ -97,7 +99,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
               ),
               iconSize: 30,
               onPressed: () {
-                // Implementa la función de la cámara
+                pickImageGalleryOrPhoto();
               },
             ),
             const SizedBox(width: 40.0),
@@ -168,8 +170,40 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
     );
   }
 
+  XFile? imageFile;
+
+  Future pickImageGalleryOrPhoto() async {
+    try {
+            widget.setIsTyping(true);
+
+      final pickedImage =
+          await ImagePicker().pickImage(source: ImageSource.camera);
+      if (pickedImage != null) {
+        imageFile = pickedImage;
+        final textoReconocido =
+            await ApiService.getLabelFromImage(pickedImage.path);
+         if (textoReconocido.isNotEmpty) {
+        // Agrega el texto transcrito como un mensaje de usuario y envíalo a ChatGPT
+        widget.chatProvider.addUserMessage(msg: "[Envio de fotografía]");
+        await widget.chatProvider.sendMessageAndGetAnswers(
+            msg: "Eres capaz de ver imagenes que yo te paso a través de un software de etiquetado de imagenes lo que estas viendo es: $textoReconocido , COMENTA ALGO SOBRE ELLO", conversationId: widget.conversationId);
+      }
+
+      widget.setIsTyping(false);
+      }
+    } on PlatformException catch (e) {
+      if (kDebugMode) {
+        print('Fallo al abrir imagen: $e');
+      }
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        print('Fallo al reconocer texto: $e');
+      }
+    }
+  }
+
   Future<void> _sendAudioMessage(String audioPath) async {
-    if (widget.lenght >= 12) {
+    /*if (widget.lenght >= 12) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -182,7 +216,7 @@ class _CommunicationButtonsState extends State<CommunicationButtons> {
         );
       }
       return;
-    }
+    }*/
     try {
       // Espera a que la transcripción esté completa antes de continuar
       widget.setIsTyping(true);

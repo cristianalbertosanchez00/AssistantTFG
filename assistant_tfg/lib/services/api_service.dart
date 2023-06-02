@@ -55,6 +55,7 @@ class ApiService {
     }
   }
 
+/*
   // Send Message fct
   static Future<List<ChatModel>> sendMessage({
     required String message,
@@ -99,7 +100,7 @@ class ApiService {
       rethrow;
     }
   }
-
+*/
   static Future<String> sendAudioMessage({required String audioPath}) async {
     try {
       var request = http.MultipartRequest(
@@ -129,8 +130,12 @@ class ApiService {
     }
   }
 
-  static Future<String> getRecognisedText(String imagePath) async {
+  static Future<String> getRecognisedText(String imagePath, bool byHand) async {
     final bytes = File(imagePath).readAsBytesSync();
+    String type = "TEXT_DETECTION";
+    if (byHand) {
+      type = "DOCUMENT_TEXT_DETECTION";
+    }
     String img64 = base64Encode(bytes);
     var url = Uri.parse(
         'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyD1WNbjRNO-dd93vUgrs_HlJJNtnbbzm7g');
@@ -143,7 +148,7 @@ class ApiService {
             {
               "image": {"content": img64},
               "features": [
-                {"type": "TEXT_DETECTION"}
+                {"type": type}
               ]
             }
           ]
@@ -162,6 +167,42 @@ class ApiService {
         return result['responses'][0]['textAnnotations'][0]['description'];
       } else {
         throw Exception('textAnnotations is empty or null');
+      }
+    } else {
+      throw Exception('responses is empty or null');
+    }
+  }
+
+  static Future<String> getLabelFromImage(String imagePath) async {
+    final bytes = File(imagePath).readAsBytesSync();
+
+    String img64 = base64Encode(bytes);
+    var url = Uri.parse(
+        'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyD1WNbjRNO-dd93vUgrs_HlJJNtnbbzm7g');
+    var response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(
+        {
+          "requests": [
+            {
+              "image": {"content": img64},
+              "features": [
+                {"type": "LABEL_DETECTION"}
+              ]
+            }
+          ]
+        },
+      ),
+    );
+    var result = jsonDecode(response.body);
+
+    if (result['responses'] != null && result['responses'].isNotEmpty) {
+      if (result['responses'][0]['labelAnnotations'] != null &&
+          result['responses'][0]['labelAnnotations'].isNotEmpty) {
+        return result['responses'][0]['labelAnnotations'][0]['description'];
+      } else {
+        throw Exception('labelAnnotations is empty or null');
       }
     } else {
       throw Exception('responses is empty or null');
